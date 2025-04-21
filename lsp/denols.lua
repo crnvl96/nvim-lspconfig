@@ -105,11 +105,11 @@ return {
     ['textDocument/typeDefinition'] = denols_handler,
     ['textDocument/references'] = denols_handler,
   },
-  on_attach = function()
-    vim.api.nvim_buf_create_user_command(0, 'LspDenolsCache', function()
-      local clients = vim.lsp.get_clients { bufnr = 0, name = 'denols' }
+  on_attach = function(_, bufnr)
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspDenolsCache', function()
+      local clients = vim.lsp.get_clients { bufnr = bufnr, name = 'denols' }
       if #clients > 0 then
-        buf_cache(0, clients[#clients])
+        buf_cache(bufnr, clients[#clients])
       end
     end, {
       desc = 'Cache a module and all of its dependencies.',

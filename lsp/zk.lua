@@ -16,21 +16,21 @@ return {
   cmd = { 'zk', 'lsp' },
   filetypes = { 'markdown' },
   root_markers = { '.zk' },
-  on_attach = function()
-    vim.api.nvim_buf_create_user_command(0, 'LspZkIndex', function()
+  on_attach = function(_, bufnr)
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspZkIndex', function()
       vim.lsp.buf.execute_command {
         command = 'zk.index',
-        arguments = { vim.api.nvim_buf_get_name(0) },
+        arguments = { vim.api.nvim_buf_get_name(bufnr) },
       }
     end, {
       desc = 'ZkIndex',
     })
 
-    vim.api.nvim_buf_create_user_command(0, 'LspZkList', function()
-      local bufpath = vim.api.nvim_buf_get_name(0)
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspZkList', function()
+      local bufpath = vim.api.nvim_buf_get_name(bufnr)
       local root = find_zk_root(bufpath)
 
-      vim.lsp.buf_request(0, 'workspace/executeCommand', {
+      vim.lsp.buf_request(bufnr, 'workspace/executeCommand', {
         command = 'zk.list',
         arguments = { root, { select = { 'path' } } },
       }, function(_, result, _, _)
@@ -48,11 +48,11 @@ return {
       desc = 'ZkList',
     })
 
-    vim.api.nvim_buf_create_user_command(0, 'LspZkNew', function(...)
-      vim.lsp.buf_request(0, 'workspace/executeCommand', {
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspZkNew', function(...)
+      vim.lsp.buf_request(bufnr, 'workspace/executeCommand', {
         command = 'zk.new',
         arguments = {
-          vim.api.nvim_buf_get_name(0),
+          vim.api.nvim_buf_get_name(bufnr),
           ...,
         },
       }, function(_, result, _, _)

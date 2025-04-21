@@ -44,10 +44,8 @@ return {
     'svelte',
     'astro',
   },
-  on_attach = function(client)
-    vim.api.nvim_buf_create_user_command(0, 'LspEslintFixAll', function()
-      local bufnr = vim.api.nvim_get_current_buf()
-
+  on_attach = function(client, bufnr)
+    vim.api.nvim_buf_create_user_command(bufnr, 'LspEslintFixAll', function()
       client:exec_cmd({
         title = 'Fix all Eslint errors for current buffer',
         command = 'eslint.applyAllFixes',
