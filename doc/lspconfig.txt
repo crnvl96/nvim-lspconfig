@@ -66,6 +66,57 @@ to the legacy nvim-lspconfig interface:
   server configuration (including `cmd` itself).
 
 ==============================================================================
+OVERRIDING FUNCTION PROPERTIES                    *lspconfig-override-functions*
+
+When providing a custom configuration using |vim.lsp.config()|, function
+properties (like `on_attach` or `on_init`) in your custom config will
+completely overwrite the default function provided by nvim-lspconfig. This
+can lead to unexpected behavior if the default function performs essential setup.
+
+For example, the default `eslint` config defines an `on_attach` function that
+creates the `LspEslintFixAll` user command: >lua
+  -- Default eslint on_attach (simplified)
+  -- on_attach = function(client, bufnr)
+  --   vim.api.nvim_buf_create_user_command(bufnr, 'LspEslintFixAll', ...)
+  -- end
+<
+If you define your own `on_attach` to add functionality, like running fixall on
+save: >lua
+  vim.lsp.config('eslint', {
+    on_attach = function(client, bufnr)
+      -- This overwrites the default on_attach!
+      vim.api.nvim_create_autocmd('BufWritePre', {
+        buffer = bufnr,
+        command = 'LspEslintFixAll', -- This command is no longer defined!
+      })
+    end,
+  })
+<
+The `LspEslintFixAll` command will fail because the default `on_attach` that
+defined it was never called.
+
+To extend the default behavior instead of replacing it, first store the default
+ function in a variable, then call it from within your custom function: >lua
+   -- Get the default on_attach function
+   local default_eslint_on_attach = vim.lsp.config.eslint.on_attach
+
+   vim.lsp.config('eslint', {
+     on_attach = function(client, bufnr)
+       -- Call the default on_attach function first
+       default_eslint_on_attach(client, bufnr)
+
+       -- Now add your custom behavior
+       vim.api.nvim_create_autocmd('BufWritePre', {
+         buffer = bufnr,
+         command = 'LspEslintFixAll',
+       })
+     end,
+   })
+<
+ This pattern ensures that both the default setup and your custom logic are
+ executed.
+
+==============================================================================
 COMMANDS                                                    *lspconfig-commands*
 
 :LspInfo                                                            *:LspInfo*
